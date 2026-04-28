@@ -1,73 +1,52 @@
 name: Build Android APK
-
 on:
   push:
     branches: [ main ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
       - name: Install Dependencies
         run: |
           npm install
           npm install @capacitor/android @capacitor/core
-          # 通知とバックグラウンド動作に必要な部品を追加
-          npm install cordova-plugin-local-notification cordova-plugin-background-mode
-
-      - name: Prepare Assets & Web Directory
+          # Android 15でバックグラウンド維持に必須の2つに絞る
+          npm install cordova-plugin-background-mode cordova-plugin-local-notification
+      - name: Prepare Assets
         run: |
-          rm -rf www
-          mkdir -p www
-          mkdir -p assets
+          mkdir -p www assets
           cp icon.png assets/icon.png || true
           cp audioamp.html www/index.html
-
       - name: Capacitor Setup
         run: |
           rm -rf android
           npx cap init "あんしん集音器" "jp.kuma.audioamp" --web-dir www
           npx cap add android
-      
-      - name: Inject Android Manifest (Fix Error & Android 15)
+      - name: Android 15 Manifest Fix
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # 既存設定を消去
-          sed -i '/de.appplant.cordova.plugin.background.ForegroundService/d' $MANIFEST
-          # 権限追加
+          # 権限とサービスを「1行ずつ」確実に追加
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' $MANIFEST
-          # サービス定義（エラー回避のため1行で記述）
-          sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:enabled="true" android:exported="false" />' $MANIFEST
-
+          sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:exported="false" />' $MANIFEST
       - name: Capacitor Sync
         run: npx cap sync android
-
-      - name: Force API Level 34
-        run: |
-          GRADLE="android/app/build.gradle"
-          echo "android.compileSdkVersion = 34" >> $GRADLE
-          echo "android.defaultConfig.targetSdkVersion = 34" >> $GRADLE
-
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
           cp app/build/outputs/apk/debug/app-debug.apk ../ansin-audioamp.apk
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
