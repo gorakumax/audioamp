@@ -36,24 +36,25 @@ jobs:
 
       - name: Capacitor Setup & Icon Generate
         run: |
-          # Androidの設計図フォルダを一度消して、真っさらな状態で作り直す
+          # 1. リセット
           rm -rf android
+          # 2. 初期化
           npx cap init "あんしん集音器" "jp.kuma.audioamp" --web-dir www
           npx cap add android
-          # クマのアイコンをAndroidシステムに焼き付ける
-          npx capacitor-assets generate --android --icon-path assets/icon.png || echo "Icon generation skipped"
+          # 3. アイコン生成（正しいコマンドに修正）
+          # --icon-path ではなく --icon を使い、フォルダではなくファイルを直接指定します
+          npx capacitor-assets generate --android --icon icon.png || echo "Icon generation failed"
 
       - name: Inject Android Manifest (Permissions & Background)
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # 通知バー（常駐）とマイクの使用に必要な許可証を書き込む
+          # 権限の注入
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
-          # 通知からアプリに戻るための設定を追記
+          # サービス設定の追加（既存のactivityの後ろに挿入）
           sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" />' $MANIFEST
-
       - name: Capacitor Sync
         run: npx cap sync android
 
