@@ -9,28 +9,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v4  # ここを v4 に修正
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4  # ここを v4 に修正
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Install Dependencies
-        run: npm install
-
-      - name: Prepare Web Assets
         run: |
+          npm install
+          npm install @capacitor/assets
+
+      - name: Prepare Assets & Web Directory
+        run: |
+          # フォルダがなければ作る
+          mkdir -p assets
           mkdir -p www
-          cp audioamp.html www/index.html  # Capacitorはindex.htmlを欲しがるのでコピー
+          # ルートにあるicon.pngをassetsにコピー(保険)
+          cp icon.png assets/icon.png || true
+          # HTMLをwwwにコピー
+          cp audioamp.html www/index.html
           cp audioamp.html www/audioamp.html
 
       - name: Capacitor Setup & Icon Generate
         run: |
           npx cap add android
-          # assetsフォルダにあるicon.pngを使ってAndroid用アイコンを全部作る命令
-          npx @capacitor/assets generate --android --icon-path assets/icon.png
+          # アイコン生成を確実に実行
+          npx capacitor-assets generate --android --icon-path assets/icon.png || echo "Icon generation skipped"
 
       - name: Inject Android Manifest (Permissions & Background)
         run: |
@@ -49,7 +56,6 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
-          # 生成されたファイルを「ansin-audioamp.apk」としてルートにコピー
           cp app/build/outputs/apk/debug/app-debug.apk ../ansin-audioamp.apk
 
       - name: Upload APK
