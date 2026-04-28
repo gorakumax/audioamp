@@ -6,7 +6,6 @@
     <title>あんしん集音器</title>
     <script src="cordova.js"></script>
     <style>
-        /* デザインは現状の素晴らしいものを維持 */
         body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 0; margin: 0; line-height: 1.2; }
         .container { width: 100%; max-width: 360px; margin: auto; padding: 10px; box-sizing: border-box; }
         .app-header { font-size: 1.1rem; color: #888; margin: 10px 0; }
@@ -59,15 +58,14 @@
     const clarSlider = document.getElementById('clarity');
 
     document.addEventListener('deviceready', () => {
-        const bg = window.cordova.plugins.backgroundMode;
-        
         // Android 13/15対策：まず通知の許可を求める
-        if (window.cordova.plugins.notification && window.cordova.plugins.notification.local) {
+        if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification) {
             window.cordova.plugins.notification.local.requestPermission((granted) => {
-                console.log("Permission: " + granted);
+                console.log("Notification permission: " + granted);
             });
         }
 
+        const bg = window.cordova.plugins.backgroundMode;
         if (bg) {
             bg.setDefaults({
                 title: "あんしん集音器が動作中",
@@ -79,10 +77,8 @@
                 foreground: true,
                 importance: 'high'
             });
-            // ここで確実に有効化
             bg.enable();
             bg.overrideBackButton();
-            // Android 15対策：スリープ抑制
             bg.on('activate', () => { 
                 bg.disableWebViewOptimizations(); 
                 bg.disableBatteryOptimizations();
@@ -91,32 +87,20 @@
     }, false);
 
     async function startAudio() {
-        const bg = window.cordova.plugins.backgroundMode;
-        
-        // Android 15対策: マイクを掴む直前にバックグラウンドモードが有効であることを再確認
-        if (bg && !bg.isActive()) {
-            bg.enable();
-        }
-
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
             });
 
             audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
-            
-            // --- 最強のフィルター設定 ---
             source = audioCtx.createMediaStreamSource(stream);
             notch = audioCtx.createBiquadFilter(); notch.type = "notch"; notch.frequency.value = 4000; notch.Q.value = 10;
             compressor = audioCtx.createDynamicsCompressor(); 
             compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
             compressor.knee.setValueAtTime(40, audioCtx.currentTime);
-            
             filter = audioCtx.createBiquadFilter(); filter.type = "highshelf"; 
             filter.frequency.value = 2500; filter.gain.value = clarSlider.value;
-            
             gainNode = audioCtx.createGain(); gainNode.gain.value = volSlider.value;
-            
             source.connect(notch).connect(compressor).connect(filter).connect(gainNode).connect(audioCtx.destination);
             
             await audioCtx.resume();
@@ -129,8 +113,8 @@
 
     startBtn.onclick = () => {
         if (!audioCtx) {
-            // Android 15の検問回避：少しだけ時間を置いてから開始
-            setTimeout(startAudio, 300);
+            // Android 15対策：1秒待ってから開始
+            setTimeout(startAudio, 1000);
         } else {
             if (audioCtx.state === 'running') {
                 audioCtx.suspend();

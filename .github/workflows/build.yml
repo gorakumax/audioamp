@@ -42,18 +42,17 @@ jobs:
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           
-          # 1. 既存の古いサービス定義を一度完全に消去（二重登録エラーを防ぐ）
+          # 既存の定義を一度完全に消去
           sed -i '/de.appplant.cordova.plugin.background.ForegroundService/d' $MANIFEST
           
-          # 2. 必要な権限を注入（すでに存在する場合はスキップされるので安心です）
+          # 権限追加 (Android 15必須セット)
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' $MANIFEST
           
-          # 3. サービスを「microphone」タイプ指定付きで、確実に認識される形式で注入
-          # </activity>の直後に、Android 15が「これは正当なマイクアプリだ」と認める定義を差し込みます
+          # サービス定義 (Android 15が認める厳格な「型」)
           sed -i '/<\/activity>/a \
           <service android:name="de.appplant.cordova.plugin.background.ForegroundService" \
                    android:foregroundServiceType="microphone" \
@@ -66,14 +65,9 @@ jobs:
       - name: Force API Level 34 (Safe Append)
         run: |
           GRADLE="android/app/build.gradle"
-          # 既存のコードを置換するのではなく、末尾に設定を強制上書きする指示を追記します
           echo "" >> $GRADLE
           echo "android.compileSdkVersion = 34" >> $GRADLE
           echo "android.defaultConfig.targetSdkVersion = 34" >> $GRADLE
-          
-          # 確認ログ
-          echo "--- Updated build.gradle tail ---"
-          tail -n 5 $GRADLE
 
       - name: Build APK
         run: |
