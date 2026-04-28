@@ -53,33 +53,23 @@
 document.addEventListener('deviceready', () => {
     const bg = window.cordova.plugins.backgroundMode;
     
-    // Android 13以降の通知許可リクエスト
-    if (window.Notification && Notification.requestPermission) {
-        Notification.requestPermission();
-    }
-
     if (bg) {
         bg.enable();
-        bg.overrideBackButton(); // 戻るボタンで終了させず裏に回す
+        // Android 15対策：バックグラウンドでも「アクティブ」であることをOSに強制主張
+        bg.overrideBackButton(); 
         
         bg.setDefaults({
             title: "あんしん集音器（動作中）",
-            text: "ここをタップすると設定画面に戻ります",
+            text: "あなたの耳をサポートしています",
             icon: 'icon', 
             color: '00FF88',
-            sticky: true,       // スワイプで通知を消せないようにする
-            resume: true,       // 通知タップでアプリを再開
-            foreground: true,   // アプリを前面に持ってくる
-            hidden: false,
-            importance: 'high',
-            channelName: 'AudioServiceChannel'
+            sticky: true,
+            resume: true,
+            foreground: true,
+            importance: 'high'
         });
 
-        if (bg.excludeFromBatteryOptimizations) {
-            bg.excludeFromBatteryOptimizations();
-        }
-
-        // 裏側に回ったときの設定
+        // 画面が消えてもCPUを寝かせない
         bg.on('activate', () => {
             bg.disableWebViewOptimizations();
         });
@@ -112,13 +102,18 @@ document.addEventListener('deviceready', () => {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { 
+                        echoCancellation: false, 
+                        noiseSuppression: false, 
+                        autoGainControl: false 
+                    } 
+                });
                 
-                // --- Android 15対策：マイク使用開始と同時にバックグラウンドを「アクティブ」にする ---
+                // --- Android 15 対策：音を出す前にバックグラウンド機能を叩き起こす ---
                 if (bg) {
                     bg.enable();
-                    bg.moveToBackground(); // 一旦システムに「裏で動くぞ」と認識させる（すぐ戻ります）
-                    bg.moveToForeground();
+                    if (bg.unlock) bg.unlock(); // 一部の機種で有効なロック解除
                 }
 
                 source = audioCtx.createMediaStreamSource(stream);
@@ -126,6 +121,7 @@ document.addEventListener('deviceready', () => {
                 compressor = audioCtx.createDynamicsCompressor(); compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
                 filter = audioCtx.createBiquadFilter(); filter.type = "highshelf"; filter.frequency.value = 2500; filter.gain.value = clarSlider.value;
                 gainNode = audioCtx.createGain(); gainNode.gain.value = volSlider.value;
+                
                 source.connect(notch).connect(compressor).connect(filter).connect(gainNode).connect(audioCtx.destination);
                 
                 await audioCtx.resume();
@@ -133,14 +129,11 @@ document.addEventListener('deviceready', () => {
                 statusL.textContent = "● 動作中"; statusL.className = "status-lamp is-running";
             } catch (err) { alert("マイクを許可してください"); }
         } else {
-            // 停止時はバックグラウンドモードも解除して電池を節約
             if (audioCtx.state === 'running') {
                 audioCtx.suspend();
-                if (bg) bg.disable(); 
                 startBtn.textContent = "再開"; startBtn.classList.remove('active');
                 statusL.textContent = "一時停止中"; statusL.className = "status-lamp is-paused";
             } else {
-                if (bg) bg.enable();
                 audioCtx.resume();
                 startBtn.textContent = "停止"; startBtn.classList.add('active');
                 statusL.textContent = "● 動作中"; statusL.className = "status-lamp is-running";
@@ -148,6 +141,7 @@ document.addEventListener('deviceready', () => {
         }
     };
 
+    // スライダー等の処理はそのまま継続
     volSlider.oninput = (e) => {
         const v = parseFloat(e.target.value);
         if (gainNode) gainNode.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
