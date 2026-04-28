@@ -35,13 +35,17 @@ jobs:
 
       - name: Capacitor Setup & Icon Generate
         run: |
-          # 1. 一度リセット
+          # 1. 古い残骸を完全に削除
           rm -rf android
-          
-          # 2. Androidプロジェクトを再作成（設定はconfig.jsonから読み込まれます）
+          rm -f capacitor.config.json
+
+          # 2. 設定ファイルをコマンドで強制作成
+          npx cap init "あんしん集音器" "jp.kuma.audioamp" --web-dir www
+
+          # 3. Androidプラットフォームを追加
           npx cap add android
-          
-          # 3. アイコン生成
+
+          # 4. アイコン生成
           npx capacitor-assets generate --android --icon-path assets/icon.png || echo "Icon generation skipped"
 
       - name: Inject Android Manifest (Permissions & Background)
