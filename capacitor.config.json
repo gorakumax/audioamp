@@ -1,0 +1,9 @@
+{
+  "appId": "jp.kuma.audioamp",
+  "appName": "あんしん集音器",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "index": "audioamp.html"
+  }
+}

@@ -88,6 +88,29 @@
 </div>
 
 <script>
+// --- Android常駐・通知設定 ---
+document.addEventListener('deviceready', () => {
+    if (window.cordova && window.cordova.plugins && window.cordova.plugins.backgroundMode) {
+        const bg = window.cordova.plugins.backgroundMode;
+        bg.enable(); // バックグラウンド動作を有効化
+        
+        // 通知バーの設定
+        bg.setDefaults({
+            title: "あんしん集音器",
+            text: "動作中：タップで設定画面に戻ります",
+            icon: 'icon', 
+            color: 'FFCC00',
+            resume: true, // タップでアプリに戻る
+            hidden: false
+        });
+
+        // バッテリー最適化の除外を依頼（OSのダイアログが出る場合があります）
+        if (bg.excludeFromBatteryOptimizations) {
+            bg.excludeFromBatteryOptimizations();
+        }
+    }
+}, false);
+// --------------------------
     let audioCtx, source, gainNode, filter, compressor, notch;
     const startBtn = document.getElementById('startBtn');
     const statusL = document.getElementById('status');
