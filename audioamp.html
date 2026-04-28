@@ -9,6 +9,9 @@
         body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 0; margin: 0; line-height: 1.2; }
         .container { width: 100%; max-width: 360px; margin: auto; padding: 10px; box-sizing: border-box; }
         
+        /* 控えめなタイトル表示 */
+        .app-header { font-size: 1.1rem; color: #888; margin: 10px 0; font-weight: normal; }
+
         .page { display: none; }
         .page.active { display: block; }
 
@@ -47,6 +50,8 @@
 
 <div class="container">
     <div id="pageMain" class="page active">
+        <div class="app-header">あんしん集音器</div>
+
         <div class="guide-box">
             <div class="step"><b>1.</b>イヤホンをつける</div>
             <div class="step"><b>2.</b>下のボタンをおす</div>
@@ -67,6 +72,7 @@
     </div>
 
     <div id="pageSettings" class="page">
+        <div class="app-header">あんしん集音器（設定）</div>
         <div class="card">
             <label>🔊 おとを大きく</label>
             <input type="range" id="volume" min="0" max="100" step="1" value="1">
