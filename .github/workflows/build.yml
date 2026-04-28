@@ -20,41 +20,38 @@ jobs:
       - name: Install Dependencies
         run: |
           npm install
-          npm install @capacitor/assets
+          npm install @capacitor/assets @capacitor/cli @capacitor/android @capacitor/core
 
       - name: Prepare Assets & Web Directory
         run: |
-          # フォルダがなければ作る
-          mkdir -p assets
+          # 以前の作業フォルダを完全に削除してリセット
+          rm -rf www
           mkdir -p www
-          # ルートにあるicon.pngをassetsにコピー(保険)
+          mkdir -p assets
+          # アイコン画像をassetsフォルダに強制配置
           cp icon.png assets/icon.png || true
-          # HTMLをwwwにコピー
+          # 最新のaudioamp.htmlを、アプリのメイン画面(index.html)としてコピー
           cp audioamp.html www/index.html
           cp audioamp.html www/audioamp.html
 
       - name: Capacitor Setup & Icon Generate
         run: |
-          # 1. 古い残骸を完全に削除
+          # Androidの設計図フォルダを一度消して、真っさらな状態で作り直す
           rm -rf android
-          rm -f capacitor.config.json
-
-          # 2. 設定ファイルをコマンドで強制作成
           npx cap init "あんしん集音器" "jp.kuma.audioamp" --web-dir www
-
-          # 3. Androidプラットフォームを追加
           npx cap add android
-
-          # 4. アイコン生成
+          # クマのアイコンをAndroidシステムに焼き付ける
           npx capacitor-assets generate --android --icon-path assets/icon.png || echo "Icon generation skipped"
 
       - name: Inject Android Manifest (Permissions & Background)
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # 通知バー（常駐）とマイクの使用に必要な許可証を書き込む
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
+          # 通知からアプリに戻るための設定を追記
           sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" />' $MANIFEST
 
       - name: Capacitor Sync
