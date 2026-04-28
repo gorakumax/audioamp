@@ -38,18 +38,27 @@ jobs:
           npx cap add android
           npx capacitor-assets generate --android || echo "Icon generation skipped"
       
-      - name: Inject Android Manifest (Android 15 Perfect)
+      - name: Inject Android Manifest (Android 15 Ultimate Fix)
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # 権限追加
+          
+          # 1. 既存の古いサービス定義を一度完全に消去（二重登録エラーを防ぐ）
+          sed -i '/de.appplant.cordova.plugin.background.ForegroundService/d' $MANIFEST
+          
+          # 2. 必要な権限を注入（すでに存在する場合はスキップされるので安心です）
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' $MANIFEST
           
-          # サービス定義
-          sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:exported="false" />' $MANIFEST
+          # 3. サービスを「microphone」タイプ指定付きで、確実に認識される形式で注入
+          # </activity>の直後に、Android 15が「これは正当なマイクアプリだ」と認める定義を差し込みます
+          sed -i '/<\/activity>/a \
+          <service android:name="de.appplant.cordova.plugin.background.ForegroundService" \
+                   android:foregroundServiceType="microphone" \
+                   android:enabled="true" \
+                   android:exported="false" />' $MANIFEST
 
       - name: Capacitor Sync
         run: npx cap sync android

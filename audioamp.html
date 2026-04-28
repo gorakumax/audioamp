@@ -59,18 +59,19 @@
     const clarSlider = document.getElementById('clarity');
 
     document.addEventListener('deviceready', () => {
-    // --- ここから追加：通知の許可をユーザーに求める ---
-        if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification) {
+        const bg = window.cordova.plugins.backgroundMode;
+        
+        // Android 13/15対策：まず通知の許可を求める
+        if (window.cordova.plugins.notification && window.cordova.plugins.notification.local) {
             window.cordova.plugins.notification.local.requestPermission((granted) => {
-                console.log("Notification permission: " + granted);
+                console.log("Permission: " + granted);
             });
         }
-        // --- ここまで追加 ---
-        const bg = window.cordova.plugins.backgroundMode;
+
         if (bg) {
             bg.setDefaults({
-                title: "あんしん集音器が耳をサポート中",
-                text: "ここをタップするとアプリに戻ります",
+                title: "あんしん集音器が動作中",
+                text: "クリアな音をお届けしています",
                 icon: 'icon', 
                 color: '00FF88',
                 sticky: true,
@@ -78,9 +79,14 @@
                 foreground: true,
                 importance: 'high'
             });
+            // ここで確実に有効化
             bg.enable();
             bg.overrideBackButton();
-            bg.on('activate', () => { bg.disableWebViewOptimizations(); });
+            // Android 15対策：スリープ抑制
+            bg.on('activate', () => { 
+                bg.disableWebViewOptimizations(); 
+                bg.disableBatteryOptimizations();
+            });
         }
     }, false);
 
