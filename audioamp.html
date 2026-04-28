@@ -108,26 +108,39 @@ document.addEventListener('deviceready', () => {
     };
 
     startBtn.onclick = async () => {
+        const bg = window.cordova.plugins.backgroundMode;
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+                
+                // --- Android 15対策：マイク使用開始と同時にバックグラウンドを「アクティブ」にする ---
+                if (bg) {
+                    bg.enable();
+                    bg.moveToBackground(); // 一旦システムに「裏で動くぞ」と認識させる（すぐ戻ります）
+                    bg.moveToForeground();
+                }
+
                 source = audioCtx.createMediaStreamSource(stream);
                 notch = audioCtx.createBiquadFilter(); notch.type = "notch"; notch.frequency.value = 4000; notch.Q.value = 10;
                 compressor = audioCtx.createDynamicsCompressor(); compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
                 filter = audioCtx.createBiquadFilter(); filter.type = "highshelf"; filter.frequency.value = 2500; filter.gain.value = clarSlider.value;
                 gainNode = audioCtx.createGain(); gainNode.gain.value = volSlider.value;
                 source.connect(notch).connect(compressor).connect(filter).connect(gainNode).connect(audioCtx.destination);
+                
                 await audioCtx.resume();
                 startBtn.textContent = "停止"; startBtn.classList.add('active');
                 statusL.textContent = "● 動作中"; statusL.className = "status-lamp is-running";
             } catch (err) { alert("マイクを許可してください"); }
         } else {
+            // 停止時はバックグラウンドモードも解除して電池を節約
             if (audioCtx.state === 'running') {
                 audioCtx.suspend();
+                if (bg) bg.disable(); 
                 startBtn.textContent = "再開"; startBtn.classList.remove('active');
                 statusL.textContent = "一時停止中"; statusL.className = "status-lamp is-paused";
             } else {
+                if (bg) bg.enable();
                 audioCtx.resume();
                 startBtn.textContent = "停止"; startBtn.classList.add('active');
                 statusL.textContent = "● 動作中"; statusL.className = "status-lamp is-running";
