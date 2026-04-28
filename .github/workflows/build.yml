@@ -20,6 +20,12 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Prepare Web Assets
+        run: |
+          mkdir -p www
+          cp audioamp.html www/index.html  # Capacitorはindex.htmlを欲しがるのでコピー
+          cp audioamp.html www/audioamp.html
+
       - name: Capacitor Setup & Icon Generate
         run: |
           npx cap add android
