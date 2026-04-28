@@ -5,165 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>あんしん集音器</title>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 0; margin: 0; }
+        body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 0; margin: 0; line-height: 1.5; }
         .container { width: 100%; max-width: 360px; margin: auto; padding: 20px 10px; box-sizing: border-box; }
         
-        /* ページ切り替え */
-        .page { display: none; }
-        .page.active { display: block; }
+        h1 { color: #00ff88; font-size: 1.8rem; margin-bottom: 20px; }
 
-        /* 案内板のデザイン */
-        .guide-box { background: #1a1a1a; border-radius: 20px; padding: 20px; border: 2px solid #333; text-align: left; margin-bottom: 10px; }
-        .step { font-size: 1.4rem; margin-bottom: 15px; line-height: 1.4; color: #ddd; }
-        .step b { color: #00ff88; font-size: 1.3rem; }
-        
-        .caution { background: #330000; color: #ff9999; padding: 15px; border-radius: 10px; border: 1px solid #660000; font-weight: bold; font-size: 1.1rem; margin-bottom: 25px; }
+        /* メリット・デメリットのカード */
+        .info-card { background: #1a1a1a; border-radius: 15px; padding: 15px; text-align: left; border: 1px solid #333; margin-bottom: 20px; }
+        .info-card h2 { font-size: 1.1rem; margin-top: 0; color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .info-card ul { padding-left: 20px; margin: 10px 0; font-size: 0.95rem; color: #ddd; }
+        .info-card li { margin-bottom: 8px; }
 
-        /* 状態表示 */
-        .status-lamp { font-size: 1.5rem; padding: 10px; background: #222; border-radius: 15px; margin-bottom: 20px; font-weight: bold; color: #666; border: 2px solid #444; }
-        .is-running { background: #004d00; color: #00ff00; border-color: #00ff00; }
-        .is-paused { background: #663300; color: #ff9900; border-color: #ff9900; }
+        /* メインの起動ボタン */
+        .btn-main {
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; height: 100px; font-size: 2.2rem; text-decoration: none;
+            background: #007bff; color: #fff; border-radius: 20px; font-weight: bold;
+            box-shadow: 0 6px 0 #0056b3; margin-bottom: 30px;
+        }
+        .btn-main:active { transform: translateY(3px); box-shadow: 0 3px 0 #0056b3; }
 
-        /* メインの開始ボタン */
-        #startBtn { width: 100%; height: 150px; font-size: 3rem; border-radius: 40px; border: none; background: #007bff; color: white; font-weight: bold; box-shadow: 0 10px 0 #0056b3; margin-bottom: 40px; }
-        #startBtn:active { transform: translateY(5px); box-shadow: 0 5px 0 #0056b3; }
-        #startBtn.active { background: #d9534f; box-shadow: 0 10px 0 #943a38; }
+        /* APKダウンロードボタン */
+        .btn-apk {
+            display: inline-block; width: 80%; padding: 12px; font-size: 1rem;
+            text-decoration: none; background: #333; color: #aaa;
+            border-radius: 10px; border: 1px solid #555; margin-top: 10px;
+        }
+        .btn-apk b { color: #fff; }
 
-        /* 設定へ行くボタン（少し控えめに） */
-        .settings-btn { width: 80%; padding: 15px; font-size: 1.2rem; border-radius: 15px; background: #333; color: #aaa; border: 1px solid #555; text-decoration: none; }
-
-        /* 設定画面内のカード */
-        .card { background: #1a1a1a; border-radius: 25px; padding: 25px; margin: 20px 0; border: 2px solid #444; }
-        label { display: block; margin-bottom: 10px; font-weight: bold; font-size: 1.6rem; color: #00ff88; }
-        input[type=range] { -webkit-appearance: none; width: 100%; height: 50px; background: #333; border-radius: 25px; outline: none; margin: 25px 0; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 80px; height: 80px; background: #fff; border-radius: 50%; border: 6px solid #00ff88; }
-        .display-val { font-size: 2.5rem; font-weight: bold; }
-        
-        .save-return-btn { width: 100%; height: 100px; font-size: 2rem; border-radius: 50px; background: #28a745; color: white; border: none; font-weight: bold; margin-top: 20px; }
+        .footer { font-size: 0.8rem; color: #666; margin-top: 40px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h1>あんしん集音器</h1>
 
-    <div id="pageMain" class="page active">
-        <div class="guide-box">
-            <div class="step"><b>1.</b> イヤホンを つける</div>
-            <div class="step"><b>2.</b> 下のボタンを おす</div>
-            <div class="step"><b>3.</b> ボリューム調整</div>
-        </div>
-
-        <div class="caution">
-            ※ 耳をいためないよう、ボリュームはひかえめからはじめてください。
-        </div>
-
-        <div id="status" class="status-lamp">電源：OFF</div>
-        
-        <button id="startBtn">開始</button>
-
-        <p style="margin-top: 40px;">
-            <button class="settings-btn" onclick="showPage('pageSettings')">⚙ 音量の設定をかえる</button>
-        </p>
+    <div class="info-card">
+        <h2>✅ よいところ</h2>
+        <ul>
+            <li>ボタン一つで開始。操作がかんたん</li>
+            <li>前回と同じ音量で、すぐ始められる</li>
+            <li>片耳イヤホンでも聞こえるモノラル設計</li>
+        </ul>
+        <h2>⚠️ 注意点</h2>
+        <ul>
+            <li>無線(Bluetooth)は少し音が遅れます</li>
+            <li>スマホの底のマイクを相手に向けます</li>
+        </ul>
     </div>
 
-    <div id="pageSettings" class="page">
-        <h2 style="color:#00ff88;">音の設定</h2>
-        
-        <div class="card">
-            <label>🔊 おとを大きく</label>
-            <input type="range" id="volume" min="0" max="100" step="1" value="1">
-            <div class="display-val"><span id="volVal">1.0</span> 倍</div>
-        </div>
+    <a href="audioamp.html" class="btn-main">アプリを開く</a>
 
-        <div class="card">
-            <label>✨ こえをハッキリ</label>
-            <input type="range" id="clarity" min="0" max="30" step="1" value="0">
-            <div class="display-val"><span id="clarVal">0</span></div>
-        </div>
+    <a href="app-release.apk" class="btn-apk">
+        Android用 <b>アプリ(APK)を保存</b>
+    </a>
 
-        <button class="save-return-btn" onclick="showPage('pageMain')">これで OK（戻る）</button>
-    </div>
-
+    <div class="footer">v1.0.0</div>
 </div>
 
-<script>
-    let audioCtx, source, gainNode, filter, compressor, notch;
-    const startBtn = document.getElementById('startBtn');
-    const statusL = document.getElementById('status');
-    const volSlider = document.getElementById('volume');
-    const clarSlider = document.getElementById('clarity');
-
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        window.scrollTo(0, 0);
-    }
-
-    // 設定復元
-    window.onload = () => {
-        const v = localStorage.getItem('k_v') || 1;
-        const c = localStorage.getItem('k_c') || 0;
-        volSlider.value = v;
-        clarSlider.value = c;
-        document.getElementById('volVal').textContent = parseFloat(v).toFixed(1);
-        document.getElementById('clarVal').textContent = c;
-    };
-
-    startBtn.onclick = async () => {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
-                });
-                source = audioCtx.createMediaStreamSource(stream);
-                
-                notch = audioCtx.createBiquadFilter();
-                notch.type = "notch"; notch.frequency.value = 4000; notch.Q.value = 10;
-                compressor = audioCtx.createDynamicsCompressor();
-                compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
-                filter = audioCtx.createBiquadFilter();
-                filter.type = "highshelf"; filter.frequency.value = 2500; filter.gain.value = clarSlider.value;
-                gainNode = audioCtx.createGain(); gainNode.gain.value = volSlider.value;
-
-                source.connect(notch).connect(compressor).connect(filter).connect(gainNode).connect(audioCtx.destination);
-                
-                await audioCtx.resume();
-                startBtn.textContent = "停止";
-                startBtn.classList.add('active');
-                statusL.textContent = "● 動作中";
-                statusL.className = "status-lamp is-running";
-            } catch (err) { alert("マイクを許可してください"); }
-        } else {
-            if (audioCtx.state === 'running') {
-                audioCtx.suspend();
-                startBtn.textContent = "再開";
-                startBtn.classList.remove('active');
-                statusL.textContent = "一時停止中";
-                statusL.className = "status-lamp is-paused";
-            } else {
-                audioCtx.resume();
-                startBtn.textContent = "停止";
-                startBtn.classList.add('active');
-                statusL.textContent = "● 動作中";
-                statusL.className = "status-lamp is-running";
-            }
-        }
-    };
-
-    volSlider.oninput = (e) => {
-        const v = parseFloat(e.target.value);
-        if (gainNode) gainNode.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
-        document.getElementById('volVal').textContent = v.toFixed(1);
-        localStorage.setItem('k_v', v);
-    };
-
-    clarSlider.oninput = (e) => {
-        const v = parseFloat(e.target.value);
-        if (filter) filter.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
-        document.getElementById('clarVal').textContent = v;
-        localStorage.setItem('k_c', v);
-    };
-</script>
 </body>
 </html>
