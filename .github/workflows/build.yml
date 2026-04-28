@@ -51,16 +51,20 @@ jobs:
           # サービス定義
           sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:exported="false" />' $MANIFEST
 
+      - name: Capacitor Sync
+        run: npx cap sync android
+
       - name: Force API Level 34 (Stability for Android 15)
         run: |
           GRADLE="android/app/build.gradle"
-          # targetSdkVersion の行を 34 に書き換え（行頭からの単語指定で安全に）
+          # ファイルの構造を壊さないよう、特定の行だけを置換
+          # targetSdkVersion 35 -> 34
           sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 34/g' $GRADLE
-          # compileSdkVersion も 34 に合わせておくことでビルドの整合性を高めます
+          # compileSdkVersion 35 -> 34
           sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 34/g' $GRADLE
-      
-      - name: Capacitor Sync
-        run: npx cap sync android
+          
+          # 確認用に中身を少しだけログに出す（エラー原因の特定用）
+          grep "SdkVersion" $GRADLE
 
       - name: Build APK
         run: |
