@@ -50,20 +50,35 @@
     </div>
 </div>
 <script>
+// --- Android 13/14対応：通知許可と常駐設定 ---
 document.addEventListener('deviceready', () => {
-    if (window.cordova && window.cordova.plugins && window.cordova.plugins.backgroundMode) {
-        const bg = window.cordova.plugins.backgroundMode;
+    const bg = window.cordova.plugins.backgroundMode;
+    
+    // 1. 通知の許可をリクエストする（Android 13以降で必須）
+    if (window.Notification && Notification.requestPermission) {
+        Notification.requestPermission();
+    }
+
+    if (bg) {
         bg.enable();
         bg.overrideBackButton();
+        
+        // 通知チャネルの設定（これを細かく書かないと最近のAndroidは無視します）
         bg.setDefaults({
             title: "あんしん集音器",
-            text: "集音中：タップで設定画面に戻ります",
-            icon: 'icon',
+            text: "集音機能が動作中です",
+            icon: 'icon', 
             color: '00FF88',
             resume: true,
+            channelName: 'AudioService', // チャネル名を明示
             importance: 'high',
             visibility: 'public'
         });
+
+        // バッテリー最適化の除外（停止対策）
+        if (bg.excludeFromBatteryOptimizations) {
+            bg.excludeFromBatteryOptimizations();
+        }
     }
 }, false);
 
