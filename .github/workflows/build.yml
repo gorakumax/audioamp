@@ -24,37 +24,31 @@ jobs:
 
       - name: Prepare Assets & Web Directory
         run: |
-          # 以前の作業フォルダを完全に削除してリセット
           rm -rf www
           mkdir -p www
           mkdir -p assets
-          # アイコン画像をassetsフォルダに強制配置
+          # ツールが自動で見つけやすいよう、複数の場所にアイコンを配置します
           cp icon.png assets/icon.png || true
-          # 最新のaudioamp.htmlを、アプリのメイン画面(index.html)としてコピー
+          cp icon.png icon.png || true
           cp audioamp.html www/index.html
-          cp audioamp.html www/audioamp.html
 
       - name: Capacitor Setup & Icon Generate
         run: |
-          # 1. リセット
           rm -rf android
-          # 2. 初期化
           npx cap init "あんしん集音器" "jp.kuma.audioamp" --web-dir www
           npx cap add android
-          # 3. アイコン生成（正しいコマンドに修正）
-          # --icon-path ではなく --icon を使い、フォルダではなくファイルを直接指定します
-          npx capacitor-assets generate --android --icon icon.png || echo "Icon generation failed"
+          # オプションを使わず、標準設定で実行（エラー回避の最善策）
+          npx capacitor-assets generate --android || echo "Icon generation skipped"
 
       - name: Inject Android Manifest (Permissions & Background)
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # 権限の注入
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
-          # サービス設定の追加（既存のactivityの後ろに挿入）
           sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" />' $MANIFEST
+
       - name: Capacitor Sync
         run: npx cap sync android
 

@@ -6,128 +6,66 @@
     <title>あんしん集音器</title>
     <script src="cordova.js"></script>
     <style>
-        /* 縦幅を節約するための設定 */
         body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 0; margin: 0; line-height: 1.2; }
         .container { width: 100%; max-width: 360px; margin: auto; padding: 10px; box-sizing: border-box; }
-        
-        /* 控えめなタイトル表示 */
-        .app-header { font-size: 1.1rem; color: #888; margin: 10px 0; font-weight: normal; }
-
+        .app-header { font-size: 1.1rem; color: #888; margin: 10px 0; }
         .page { display: none; }
         .page.active { display: block; }
-
-        /* ガイドをコンパクトに */
         .guide-box { background: #1a1a1a; border-radius: 12px; padding: 10px; border: 1px solid #333; text-align: left; margin-bottom: 8px; }
         .step { font-size: 1.1rem; margin-bottom: 5px; color: #ddd; }
-        .step b { color: #00ff88; font-size: 1.2rem; margin-right: 5px; }
-        
-        /* 注意書きを1〜2行に凝縮 */
-        .caution { background: #330000; color: #ff9999; padding: 8px; border-radius: 8px; border: 1px solid #660000; font-weight: bold; font-size: 0.95rem; margin-bottom: 12px; }
-
-        /* 状態表示も少しスリムに */
+        .step b { color: #00ff88; font-size: 1.2rem; }
+        .caution { background: #330000; color: #ff9999; padding: 8px; border-radius: 8px; border: 1px solid #660000; font-size: 0.95rem; margin-bottom: 12px; }
         .status-lamp { font-size: 1.3rem; padding: 8px; background: #222; border-radius: 10px; margin-bottom: 12px; font-weight: bold; color: #666; border: 1px solid #444; }
         .is-running { background: #004d00; color: #00ff00; border-color: #00ff00; }
         .is-paused { background: #663300; color: #ff9900; border-color: #ff9900; }
-
-        /* 開始ボタン：高さを抑えて「横長」に */
         #startBtn { width: 100%; height: 100px; font-size: 2.8rem; border-radius: 20px; border: none; background: #007bff; color: white; font-weight: bold; box-shadow: 0 6px 0 #0056b3; margin-bottom: 20px; }
-        #startBtn:active { transform: translateY(3px); box-shadow: 0 3px 0 #0056b3; }
         #startBtn.active { background: #d9534f; box-shadow: 0 6px 0 #943a38; }
-
-        /* 設定ボタンを配置 */
         .settings-btn { width: 90%; padding: 12px; font-size: 1.1rem; border-radius: 12px; background: #333; color: #aaa; border: 1px solid #555; }
-
-        /* 設定画面のスライダーも少し細く */
         .card { background: #1a1a1a; border-radius: 15px; padding: 15px; margin: 10px 0; border: 1px solid #444; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 1.3rem; color: #00ff88; }
-        input[type=range] { -webkit-appearance: none; width: 100%; height: 40px; background: #333; border-radius: 20px; outline: none; margin: 15px 0; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 60px; height: 60px; background: #fff; border-radius: 50%; border: 5px solid #00ff88; }
+        input[type=range] { width: 100%; height: 40px; margin: 15px 0; }
         .display-val { font-size: 2.2rem; font-weight: bold; }
-        
-        .save-return-btn { width: 100%; height: 80px; font-size: 2rem; border-radius: 40px; background: #28a745; color: white; border: none; font-weight: bold; }
+        .save-return-btn { width: 100%; height: 80px; font-size: 2rem; border-radius: 40px; background: #28a745; color: white; border: none; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div id="pageMain" class="page active">
         <div class="app-header">あんしん集音器</div>
-
         <div class="guide-box">
             <div class="step"><b>1.</b>イヤホンをつける</div>
             <div class="step"><b>2.</b>下のボタンをおす</div>
             <div class="step"><b>3.</b>ボリューム調整</div>
         </div>
-
-        <div class="caution">
-            ※耳をいためないよう、控えめな音から！
-        </div>
-
+        <div class="caution">※耳をいためないよう、控えめな音から！</div>
         <div id="status" class="status-lamp">電源：OFF</div>
-        
         <button id="startBtn">開始</button>
-
-        <p style="margin-top: 20px;">
-            <button class="settings-btn" onclick="showPage('pageSettings')">⚙ 音の設定をかえる</button>
-        </p>
+        <p><button class="settings-btn" onclick="showPage('pageSettings')">⚙ 音の設定をかえる</button></p>
     </div>
-
     <div id="pageSettings" class="page">
         <div class="app-header">あんしん集音器（設定）</div>
-        <div class="card">
-            <label>🔊 おとを大きく</label>
-            <input type="range" id="volume" min="0" max="100" step="1" value="1">
-            <div class="display-val"><span id="volVal">1.0</span>倍</div>
-        </div>
-        <div class="card">
-            <label>✨ こえをハッキリ</label>
-            <input type="range" id="clarity" min="0" max="30" step="1" value="0">
-            <div class="display-val"><span id="clarVal">0</span></div>
-        </div>
+        <div class="card"><label>🔊 おとを大きく</label><input type="range" id="volume" min="0" max="100" step="1" value="1"><div class="display-val"><span id="volVal">1.0</span>倍</div></div>
+        <div class="card"><label>✨ こえをハッキリ</label><input type="range" id="clarity" min="0" max="30" step="1" value="0"><div class="display-val"><span id="clarVal">0</span></div></div>
         <button class="save-return-btn" onclick="showPage('pageMain')">戻る</button>
     </div>
 </div>
-
 <script>
-// --- Android常駐・通知設定の強化版 ---
 document.addEventListener('deviceready', () => {
-    console.log("Device Ready: Android常駐処理を開始します");
-    
     if (window.cordova && window.cordova.plugins && window.cordova.plugins.backgroundMode) {
         const bg = window.cordova.plugins.backgroundMode;
-        
-        // 1. バックグラウンド動作を有効化
         bg.enable();
-        
-        // 2. Android固有の設定
-        bg.overrideBackButton(); // 戻るボタンでアプリを終了させず、背景に回す
-        
+        bg.overrideBackButton();
         bg.setDefaults({
             title: "あんしん集音器",
             text: "集音中：タップで設定画面に戻ります",
-            icon: 'icon', // assets内のiconを参照
+            icon: 'icon',
             color: '00FF88',
             resume: true,
-            hidden: false,
-            bigtext: false,
-            importance: 'high', // 通知の優先度を上げる（重要）
+            importance: 'high',
             visibility: 'public'
         });
-
-        // 3. バッテリー最適化の除外（OSの省電力機能でマイクが止まるのを防ぐ）
-        if (bg.excludeFromBatteryOptimizations) {
-            bg.excludeFromBatteryOptimizations();
-        }
-
-        // 4. バックグラウンド移行時の処理
-        bg.on('activate', () => {
-            bg.disableWebViewOptimizations(); // CPUの制限を解除
-        });
-    } else {
-        console.warn("常駐プラグインが見つかりません。通常のWebブラウザ動作です。");
     }
 }, false);
-// --------------------------
 
     let audioCtx, source, gainNode, filter, compressor, notch;
     const startBtn = document.getElementById('startBtn');
@@ -154,37 +92,26 @@ document.addEventListener('deviceready', () => {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
                 source = audioCtx.createMediaStreamSource(stream);
-                notch = audioCtx.createBiquadFilter();
-                notch.type = "notch"; notch.frequency.value = 4000; notch.Q.value = 10;
-                compressor = audioCtx.createDynamicsCompressor();
-                compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
-                filter = audioCtx.createBiquadFilter();
-                filter.type = "highshelf"; filter.frequency.value = 2500; filter.gain.value = clarSlider.value;
+                notch = audioCtx.createBiquadFilter(); notch.type = "notch"; notch.frequency.value = 4000; notch.Q.value = 10;
+                compressor = audioCtx.createDynamicsCompressor(); compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
+                filter = audioCtx.createBiquadFilter(); filter.type = "highshelf"; filter.frequency.value = 2500; filter.gain.value = clarSlider.value;
                 gainNode = audioCtx.createGain(); gainNode.gain.value = volSlider.value;
                 source.connect(notch).connect(compressor).connect(filter).connect(gainNode).connect(audioCtx.destination);
                 await audioCtx.resume();
-                startBtn.textContent = "停止";
-                startBtn.classList.add('active');
-                statusL.textContent = "● 動作中";
-                statusL.className = "status-lamp is-running";
+                startBtn.textContent = "停止"; startBtn.classList.add('active');
+                statusL.textContent = "● 動作中"; statusL.className = "status-lamp is-running";
             } catch (err) { alert("マイクを許可してください"); }
         } else {
             if (audioCtx.state === 'running') {
                 audioCtx.suspend();
-                startBtn.textContent = "再開";
-                startBtn.classList.remove('active');
-                statusL.textContent = "一時停止中";
-                statusL.className = "status-lamp is-paused";
+                startBtn.textContent = "再開"; startBtn.classList.remove('active');
+                statusL.textContent = "一時停止中"; statusL.className = "status-lamp is-paused";
             } else {
                 audioCtx.resume();
-                startBtn.textContent = "停止";
-                startBtn.classList.add('active');
-                statusL.textContent = "● 動作中";
-                statusL.className = "status-lamp is-running";
+                startBtn.textContent = "停止"; startBtn.classList.add('active');
+                statusL.textContent = "● 動作中"; statusL.className = "status-lamp is-running";
             }
         }
     };
