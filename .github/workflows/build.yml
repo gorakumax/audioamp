@@ -54,10 +54,10 @@ jobs:
       - name: Force API Level 34 (Stability for Android 15)
         run: |
           GRADLE="android/app/build.gradle"
-          # targetSdkVersion の行だけを安全に書き換えます
-          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 34/' $GRADLE
-          # 念のため compileSdkVersion も 34 に揃えておくとより確実です
-          sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 34/' $GRADLE
+          # targetSdkVersion の行を 34 に書き換え（行頭からの単語指定で安全に）
+          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 34/g' $GRADLE
+          # compileSdkVersion も 34 に合わせておくことでビルドの整合性を高めます
+          sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 34/g' $GRADLE
       
       - name: Capacitor Sync
         run: npx cap sync android
