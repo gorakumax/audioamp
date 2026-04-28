@@ -54,17 +54,17 @@ jobs:
       - name: Capacitor Sync
         run: npx cap sync android
 
-      - name: Force API Level 34 (Stability for Android 15)
+      - name: Force API Level 34 (Safe Append)
         run: |
           GRADLE="android/app/build.gradle"
-          # ファイルの構造を壊さないよう、特定の行だけを置換
-          # targetSdkVersion 35 -> 34
-          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 34/g' $GRADLE
-          # compileSdkVersion 35 -> 34
-          sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 34/g' $GRADLE
+          # 既存のコードを置換するのではなく、末尾に設定を強制上書きする指示を追記します
+          echo "" >> $GRADLE
+          echo "android.compileSdkVersion = 34" >> $GRADLE
+          echo "android.defaultConfig.targetSdkVersion = 34" >> $GRADLE
           
-          # 確認用に中身を少しだけログに出す（エラー原因の特定用）
-          grep "SdkVersion" $GRADLE
+          # 確認ログ
+          echo "--- Updated build.gradle tail ---"
+          tail -n 5 $GRADLE
 
       - name: Build APK
         run: |
