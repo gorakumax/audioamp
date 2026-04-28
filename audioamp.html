@@ -59,6 +59,13 @@
     const clarSlider = document.getElementById('clarity');
 
     document.addEventListener('deviceready', () => {
+    // --- ここから追加：通知の許可をユーザーに求める ---
+        if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification) {
+            window.cordova.plugins.notification.local.requestPermission((granted) => {
+                console.log("Notification permission: " + granted);
+            });
+        }
+        // --- ここまで追加 ---
         const bg = window.cordova.plugins.backgroundMode;
         if (bg) {
             bg.setDefaults({
