@@ -35,6 +35,7 @@ jobs:
 
       - name: Capacitor Setup & Icon Generate
         run: |
+          rm -rf android  # ← 古い設定を一度捨てて、真っさらな状態で作り直す
           npx cap add android
           # アイコン生成を確実に実行
           npx capacitor-assets generate --android --icon-path assets/icon.png || echo "Icon generation skipped"
