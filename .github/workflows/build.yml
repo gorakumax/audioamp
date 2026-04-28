@@ -17,12 +17,10 @@ jobs:
         run: |
           npm install
           npm install @capacitor/android @capacitor/core
-          # Android 15でバックグラウンド維持に必須の2つに絞る
           npm install cordova-plugin-background-mode cordova-plugin-local-notification
       - name: Prepare Assets
         run: |
-          mkdir -p www assets
-          cp icon.png assets/icon.png || true
+          mkdir -p www
           cp audioamp.html www/index.html
       - name: Capacitor Setup
         run: |
@@ -32,12 +30,13 @@ jobs:
       - name: Android 15 Manifest Fix
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # 権限とサービスを「1行ずつ」確実に追加
+          # 権限追加
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' $MANIFEST
+          # サービス定義（エラー回避のためactivityタグの後ろにシンプルに挿入）
           sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:exported="false" />' $MANIFEST
       - name: Capacitor Sync
         run: npx cap sync android
