@@ -21,8 +21,9 @@ jobs:
         run: |
           npm install
           npm install @capacitor/assets @capacitor/cli @capacitor/android @capacitor/core
-          # ↓この行を確実に追加
+          # 通知とバックグラウンド動作に不可欠なプラグインを明示的にインストール
           npm install cordova-plugin-local-notification
+          npm install cordova-plugin-background-mode
 
       - name: Prepare Assets & Web Directory
         run: |
