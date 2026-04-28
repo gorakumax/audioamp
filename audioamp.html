@@ -50,35 +50,39 @@
     </div>
 </div>
 <script>
-// --- Android 13/14対応：通知許可と常駐設定 ---
 document.addEventListener('deviceready', () => {
     const bg = window.cordova.plugins.backgroundMode;
     
-    // Android 13以降、通知を出すための明示的な許可を求める
+    // Android 13以降の通知許可リクエスト
     if (window.Notification && Notification.requestPermission) {
-        Notification.requestPermission().then(permission => {
-            console.log("通知許可状態:", permission);
-        });
+        Notification.requestPermission();
     }
 
     if (bg) {
         bg.enable();
-        bg.overrideBackButton();
+        bg.overrideBackButton(); // 戻るボタンで終了させず裏に回す
         
         bg.setDefaults({
-            title: "あんしん集音器",
-            text: "集音中：タップで設定画面に戻ります",
+            title: "あんしん集音器（動作中）",
+            text: "ここをタップすると設定画面に戻ります",
             icon: 'icon', 
             color: '00FF88',
-            resume: true,
-            channelName: 'AudioServiceChannel', // 通知チャネルを定義
+            sticky: true,       // スワイプで通知を消せないようにする
+            resume: true,       // 通知タップでアプリを再開
+            foreground: true,   // アプリを前面に持ってくる
+            hidden: false,
             importance: 'high',
-            visibility: 'public'
+            channelName: 'AudioServiceChannel'
         });
 
         if (bg.excludeFromBatteryOptimizations) {
             bg.excludeFromBatteryOptimizations();
         }
+
+        // 裏側に回ったときの設定
+        bg.on('activate', () => {
+            bg.disableWebViewOptimizations();
+        });
     }
 }, false);
 
