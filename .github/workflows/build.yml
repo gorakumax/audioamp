@@ -27,7 +27,6 @@ jobs:
           rm -rf www
           mkdir -p www
           mkdir -p assets
-          # ツールが自動で見つけやすいよう、複数の場所にアイコンを配置します
           cp icon.png assets/icon.png || true
           cp icon.png icon.png || true
           cp audioamp.html www/index.html
@@ -37,21 +36,25 @@ jobs:
           rm -rf android
           npx cap init "あんしん集音器" "jp.kuma.audioamp" --web-dir www
           npx cap add android
-          # オプションを使わず、標準設定で実行（エラー回避の最善策）
           npx capacitor-assets generate --android || echo "Icon generation skipped"
       
-      - name: Inject Android Manifest (Android 15 Strict)
+      - name: Inject Android Manifest (Android 15 Perfect)
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # 権限の追加
+          # 権限追加
           sed -i '/<application/i <uses-permission android:name="android.permission.RECORD_AUDIO" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' $MANIFEST
           
-          # サービス定義：Android 15のルールに完全準拠
-          sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:exported="false" android:directBootAware="true" />' $MANIFEST
+          # サービス定義
+          sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:exported="false" />' $MANIFEST
+
+      - name: Force API Level 34 (Stability for Android 15)
+        run: |
+          GRADLE="android/app/build.gradle"
+          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 34/' $GRADLE
       
       - name: Capacitor Sync
         run: npx cap sync android
