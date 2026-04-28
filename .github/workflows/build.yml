@@ -26,7 +26,7 @@ jobs:
           cp audioamp.html www/index.html  # Capacitorはindex.htmlを欲しがるのでコピー
           cp audioamp.html www/audioamp.html
 
-		- name: Capacitor Setup & Icon Generate
+      - name: Capacitor Setup & Icon Generate
         run: |
           npx cap add android
           # assetsフォルダにあるicon.pngを使ってAndroid用アイコンを全部作る命令
