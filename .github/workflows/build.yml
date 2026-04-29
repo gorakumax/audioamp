@@ -40,7 +40,7 @@ jobs:
           # オプションを使わず、標準設定で実行（エラー回避の最善策）
           npx capacitor-assets generate --android || echo "Icon generation skipped"
       
-      - name: Inject Android Manifest (Android 15 Strict)
+      - name: Inject Android Manifest (Android 14/15 Support)
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           # 権限の追加
@@ -50,8 +50,9 @@ jobs:
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' $MANIFEST
           
-          # 修正後の1行（このドル記号 $ がポイントです）
-sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.BackgroundMode$ForegroundService" android:foregroundServiceType="microphone" android:exported="false" android:directBootAware="true" />' $MANIFEST
+          # サービス定義：プラグインの正式名称「BackgroundMode$ForegroundService」を指定
+          # ドル記号をエスケープするためにシングルクォートで囲みます
+          sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.BackgroundMode$ForegroundService" android:foregroundServiceType="microphone" android:exported="false" android:directBootAware="true" />' $MANIFEST
       
       - name: Capacitor Sync
         run: npx cap sync android
