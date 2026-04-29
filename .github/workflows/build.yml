@@ -50,8 +50,8 @@ jobs:
           sed -i '/<application/i <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />' $MANIFEST
           sed -i '/<application/i <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' $MANIFEST
           
-          # サービス定義：Android 15のルールに完全準拠
-          sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.ForegroundService" android:foregroundServiceType="microphone" android:exported="false" android:directBootAware="true" />' $MANIFEST
+          # 修正後の1行（このドル記号 $ がポイントです）
+sed -i '/<\/activity>/a <service android:name="de.appplant.cordova.plugin.background.BackgroundMode$ForegroundService" android:foregroundServiceType="microphone" android:exported="false" android:directBootAware="true" />' $MANIFEST
       
       - name: Capacitor Sync
         run: npx cap sync android
